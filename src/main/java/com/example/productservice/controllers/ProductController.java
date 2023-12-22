@@ -26,4 +26,25 @@ public class ProductController {
         p.setId(product.getId());
         return p;
     }
+
+    @PatchMapping("/{id}")
+    public Product updateProduct(@PathVariable("id") Long id, @RequestBody Product product){
+        Product p = new Product();
+        p.setId(id);
+        p.setName(product.getName());
+        return p;
+    }
+
+    @PutMapping("/{id}")
+    public Product replaceProduct(@PathVariable("id") Long id, @RequestBody Product product){
+        Product p = new Product();
+        p.setId(id);
+        p.setName(product.getName());
+        return p;
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteProduct(@PathVariable("id") Long id){
+        // delete product with id
+    }
 }
