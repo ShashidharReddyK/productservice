@@ -1,5 +1,6 @@
 package com.example.productservice.controllers;
 
+import com.example.productservice.models.Category;
 import com.example.productservice.models.Product;
 import com.example.productservice.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +32,10 @@ public class ProductController {
 
     @PostMapping("/add")
     public Product addProduct(@RequestBody Product product){
-        Product p = new Product();
-        p.setId(product.getId());
-        return p;
+        return productService.addProduct(product);
     }
 
-    @PatchMapping("/patch/{id}")
+    @PatchMapping("/patch-{id}")
     public Product updateProduct(@PathVariable("id") Long id, @RequestBody Product product){
         Product p = new Product();
         p.setId(id);
@@ -44,16 +43,24 @@ public class ProductController {
         return p;
     }
 
-    @PutMapping("/put/{id}")
+    @PutMapping("/put-{id}")
     public Product replaceProduct(@PathVariable("id") Long id, @RequestBody Product product){
-        Product p = new Product();
-        p.setId(id);
-        p.setTitle(product.getTitle());
-        return p;
+        return productService.putProduct(id, product);
     }
 
-    @DeleteMapping("/delete/{id}")
-    public void deleteProduct(@PathVariable("id") Long id){
+    @DeleteMapping("/delete-{id}")
+    public Product deleteProduct(@PathVariable("id") Long id){
         // delete product with id
+        return productService.deleteProduct(id);
+    }
+
+    @GetMapping("/categories")
+    public List<Category> getCategories(){
+        return productService.getCategories();
+    }
+
+    @GetMapping("/category/{category}")
+    public List<Product> getProductsByCategory(@PathVariable("category") String category){
+        return productService.getProductsByCategory(category);
     }
 }
