@@ -1,19 +1,18 @@
 package com.example.productservice.services;
 
 import com.example.productservice.dtos.FakeStoreProductDto;
+import com.example.productservice.exceptions.ProductNotExistException;
 import com.example.productservice.models.Category;
 import com.example.productservice.models.Product;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpMessageConverterExtractor;
-import org.springframework.web.client.RequestCallback;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
+@Service("fakeStoreProductService")
 public class FakeStoreProductService implements ProductService{
 
     private RestTemplate restTemplate;
@@ -52,9 +51,13 @@ public class FakeStoreProductService implements ProductService{
         return fakeStoreProduct;
     }
     @Override
-    public Product getProduct(Long id) {
+    public Product getProduct(Long id) throws ProductNotExistException {
         FakeStoreProductDto productDto = restTemplate.getForObject("https://fakestoreapi.com/products/"+id,
                 FakeStoreProductDto.class);
+
+        if(productDto == null){
+            throw new ProductNotExistException("Product with id "+id+" does not exist");
+        }
         return convertFakeStoreProductDtoToProduct(productDto);
     }
 
@@ -84,14 +87,30 @@ public class FakeStoreProductService implements ProductService{
 
     public Product deleteProduct(Long id) {
         // delete product with id
-        RequestCallback requestCallback = restTemplate.httpEntityCallback(id, FakeStoreProductDto.class);
-        HttpMessageConverterExtractor<FakeStoreProductDto> responseExtractor = new HttpMessageConverterExtractor(FakeStoreProductDto.class, restTemplate.getMessageConverters());
-        FakeStoreProductDto fakeStoreProductDto = restTemplate.execute("https://fakestoreapi.com/products/"+id, HttpMethod.DELETE, requestCallback, responseExtractor);
-//
+        //
 //        FakeStoreProductDto fakeStoreProductDto = restTemplate.getForObject("https://fakestoreapi.com/products/"+id,
 //                FakeStoreProductDto.class);
 //        restTemplate.delete("https://fakestoreapi.com/products/"+id);
-        return convertFakeStoreProductDtoToProduct(fakeStoreProductDto);
+
+//        RequestCallback requestCallback = restTemplate.httpEntityCallback(id, FakeStoreProductDto.class);
+//        HttpMessageConverterExtractor<FakeStoreProductDto> responseExtractor = new HttpMessageConverterExtractor(FakeStoreProductDto.class, restTemplate.getMessageConverters());
+//        FakeStoreProductDto fakeStoreProductDto = restTemplate.execute("https://fakestoreapi.com/products/" + id, HttpMethod.DELETE, requestCallback, responseExtractor);
+//        return convertFakeStoreProductDtoToProduct(fakeStoreProductDto);
+
+        String url = "https://fakestoreapi.com/products/" + id;
+
+        RequestCallback requestCallback = restTemplate.httpEntityCallback(id, FakeStoreProductDto.class);
+
+        ResponseExtractor<ResponseEntity<FakeStoreProductDto>> responseExtractor =
+                restTemplate.responseEntityExtractor(FakeStoreProductDto.class);
+
+        ResponseEntity<FakeStoreProductDto> responseEntity =
+                restTemplate.execute(url, HttpMethod.DELETE, requestCallback, responseExtractor);
+
+        FakeStoreProductDto fakeStoreProductDto = responseEntity.getBody();
+
+        // Now you can use fakeStoreProductDto as needed
+         return convertFakeStoreProductDtoToProduct(fakeStoreProductDto);
     }
 
     public Product patchProduct(Long id, Product product) {

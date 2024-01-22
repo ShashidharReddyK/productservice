@@ -1,9 +1,13 @@
 package com.example.productservice.controllers;
 
+import com.example.productservice.exceptions.ProductNotExistException;
 import com.example.productservice.models.Category;
 import com.example.productservice.models.Product;
 import com.example.productservice.services.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -16,7 +20,7 @@ public class ProductController {
     private ProductService productService;
 
     @Autowired
-    public ProductController(ProductService productService){
+    public ProductController(@Qualifier(value = "selfProductService") ProductService productService){
         this.productService = productService;
     }
 
@@ -26,8 +30,10 @@ public class ProductController {
     }
 
     @GetMapping("/get-{id}")
-    public Product getProductById(@PathVariable("id") Long id){
-        return productService.getProduct(id);
+    public ResponseEntity<Product> getProductByIdResponse(@PathVariable("id") Long id) throws ProductNotExistException {
+        return new ResponseEntity<>(
+                productService.getProduct(id),
+                HttpStatus.OK);
     }
 
     @PostMapping("/add")
@@ -37,10 +43,7 @@ public class ProductController {
 
     @PatchMapping("/patch-{id}")
     public Product updateProduct(@PathVariable("id") Long id, @RequestBody Product product){
-        Product p = new Product();
-        p.setId(id);
-        p.setTitle(product.getTitle());
-        return p;
+        return productService.patchProduct(id, product);
     }
 
     @PutMapping("/put-{id}")
@@ -49,7 +52,7 @@ public class ProductController {
     }
 
     @DeleteMapping("/delete-{id}")
-    public Product deleteProduct(@PathVariable("id") Long id){
+    public Product deleteProduct(@PathVariable("id") Long id) throws ProductNotExistException {
         // delete product with id
         return productService.deleteProduct(id);
     }
@@ -62,5 +65,10 @@ public class ProductController {
     @GetMapping("/category/{category}")
     public List<Product> getProductsByCategory(@PathVariable("category") String category){
         return productService.getProductsByCategory(category);
+    }
+
+    @ExceptionHandler(ProductNotExistException.class)
+    public ResponseEntity<Void> handleProductNotExistException() {
+        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
     }
 }
