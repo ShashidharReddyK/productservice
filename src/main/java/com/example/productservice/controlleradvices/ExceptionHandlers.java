@@ -28,6 +28,6 @@ public class ExceptionHandlers {
         ExceptionDto dto = new ExceptionDto();
         dto.setMessage(exception.getMessage());
         dto.setDetail("Product not found, please check the id");
-        return new ResponseEntity<>(dto, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(dto, HttpStatus.OK);
     }
 }

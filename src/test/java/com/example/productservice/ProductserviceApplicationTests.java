@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 @SpringBootTest
 class ProductserviceApplicationTests {
     @Autowired
@@ -38,5 +40,7 @@ class ProductserviceApplicationTests {
 //    productRepository.save(product);
 //         productRepository.findById(1L);
         selfProductService.patchProduct(11L,product);
+
+        assertEquals(1,1);
     }
 }

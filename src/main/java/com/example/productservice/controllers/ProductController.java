@@ -1,5 +1,7 @@
 package com.example.productservice.controllers;
 
+import com.example.productservice.commons.AuthenticationCommons;
+import com.example.productservice.dtos.ExceptionDto;
 import com.example.productservice.exceptions.ProductNotExistException;
 import com.example.productservice.models.Category;
 import com.example.productservice.models.Product;
@@ -19,14 +21,21 @@ public class ProductController {
 
     private ProductService productService;
 
+    private AuthenticationCommons authenticationCommons;
+
     @Autowired
-    public ProductController(@Qualifier(value = "selfProductService") ProductService productService){
+    public ProductController(@Qualifier(value = "selfProductService") ProductService productService,
+                             AuthenticationCommons authenticationCommons){
         this.productService = productService;
+        this.authenticationCommons = authenticationCommons;
     }
 
     @GetMapping("/all")
-    public List<Product> getAllProducts(){
-        return productService.getAllProducts();
+    public ResponseEntity<List<Product>> getAllProducts(){
+//        if(authenticationCommons.validateToken(token) == null){
+//            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+//        }
+        return new ResponseEntity<>(productService.getAllProducts(),HttpStatus.OK);
     }
 
     @GetMapping("/get-{id}")
@@ -68,7 +77,10 @@ public class ProductController {
     }
 
     @ExceptionHandler(ProductNotExistException.class)
-    public ResponseEntity<Void> handleProductNotExistException() {
-        return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+    public ResponseEntity<ExceptionDto> handleProductNotExistException() {
+        ExceptionDto exceptionDto = new ExceptionDto();
+        exceptionDto.setMessage("Product does not exist");
+        exceptionDto.setDetail("Product does not exist");
+        return new ResponseEntity<ExceptionDto>(exceptionDto,HttpStatus.OK);
     }
 }
